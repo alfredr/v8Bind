@@ -3,6 +3,10 @@
 #include <iostream>
 #include <export.h>
 
+int sub(int x, int y) {
+    return x-y;
+}
+
 struct TestClassA {
 
     int add(int x, int y) {
@@ -235,6 +239,45 @@ class ExportTestSute : public CxxTest::TestSuite {
         v8Bind::FunctionStub<TestClassB>::Get::Clear();
     }
 
+    void test_function(void) {
+        v8::HandleScope scope;
+        v8::Context::Scope cscope(context);
+
+        v8Bind::Export<TestClassA>("TestClassA")
+            .Constructor()
+            .Function("sub", &sub)
+            .Finalize();
+
+        v8::Handle<v8::Value> result = execute_string("TestClassA.sub(100,50);");
+        TS_ASSERT_EQUALS(v8Bind::FromV8<int>(result), 50);
+        v8Bind::FunctionStub<TestClassA>::Get::Clear();
+    }
+
+    void test_value(void) {
+        v8::HandleScope scope;
+        v8::Context::Scope cscope(context);
+
+        v8Bind::Export<TestClassB>("TestClassB")
+            .Constructor<int>()
+            .Member("get_value", &TestClassB::get_value)
+            .Finalize();
+
+        TestClassB B(4);
+        v8Bind::Export<TestClassA>("TestClassA")
+            .Constructor()
+            .Value("MYCONST", 6)
+            .Value("TESTCLASS", &B)
+            .Finalize();
+
+        v8::Handle<v8::Value> result;
+        result = execute_string("TestClassA.MYCONST;");
+        TS_ASSERT_EQUALS(v8Bind::FromV8<int>(result), 6);
+
+        result = execute_string("TestClassA.TESTCLASS.get_value();");
+        TS_ASSERT_EQUALS(v8Bind::FromV8<int>(result), 4);
+
+        v8Bind::FunctionStub<TestClassA>::Get::Clear();
+    }
 
     v8::Persistent<v8::Context> context;
 };

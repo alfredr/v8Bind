@@ -11,12 +11,18 @@
 
 namespace v8Bind {
 
+    /* Below are classes for facilitating invocation od
+     * member functions. Their roles are exactly analogous
+     * to those for the Function hooks. See the notes
+     * there.
+     */
+
     template <typename MemberPtrType>
-    struct MemberStub {
+    struct MemberData {
 
         typedef FunctionTraits<MemberPtrType> Traits;
 
-        MemberStub(MemberPtrType p_member) 
+        MemberData(MemberPtrType p_member) 
             : _p_member(p_member) { }
 
         v8::Handle<v8::Value> invoke(typename Traits::ConstAwareClassType * p_that, 
@@ -30,11 +36,11 @@ namespace v8Bind {
 
     template <typename MemberPtrType>
     struct Member {
-        typedef MemberStub<MemberPtrType> TMemberStub;
+        typedef MemberData<MemberPtrType> TMemberData;
         typedef FunctionTraits<MemberPtrType> Traits;
 
         inline static v8::Handle<v8::External> Info(MemberPtrType p_member) {
-            return make_weak( new TMemberStub(p_member) );
+            return make_weak( new TMemberData(p_member) );
         }
 
         inline static v8::Handle<v8::Value> Hook(const v8::Arguments & v8args) {
@@ -42,8 +48,8 @@ namespace v8Bind {
                 typename Traits::ConstAwareClassType * p_that 
                     = FromV8<typename Traits::ConstAwareClassType *>(v8args.This());
             
-                TMemberStub * p_member_stub (
-                    static_cast<TMemberStub*> (
+                TMemberData * p_member_stub (
+                    static_cast<TMemberData*> (
                         v8::External::Unwrap(v8args.Data())
                     )
                 );

@@ -1,0 +1,7 @@
+syntax: glob
+*.swp
+*.o
+tests/converters
+tests/export
+tests/typeinfo
+tests/*.cpp
