@@ -275,6 +275,13 @@ class ExportTestSute : public CxxTest::TestSuite {
 
         result = execute_string("TestClassA.TESTCLASS.get_value();");
         TS_ASSERT_EQUALS(v8Bind::FromV8<int>(result), 4);
+ 
+        result = execute_string("TestClassA.TESTCLASS;");
+        TS_ASSERT_EQUALS(v8Bind::FromV8<TestClassB&>(result).get_value(), 4);
+
+       result = execute_string("TestClassA.TESTCLASS.get_value();");
+        TS_ASSERT_EQUALS(v8Bind::FromV8<int>(result), 4);
+
 
         v8Bind::FunctionStub<TestClassA>::Get::Clear();
     }
